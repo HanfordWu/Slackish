@@ -16,7 +16,7 @@ import { createStore } from "redux";
 import { Provider, connect } from "react-redux";
 import { composeWithDevTools } from "redux-devtools-extension";
 import rootReducer from "./reducers";
-import { setUser } from "./actions";
+import { setUser, clearUser } from "./actions";
 import Spinner from "./Spinner";
 
 const store = createStore(rootReducer, composeWithDevTools());
@@ -30,6 +30,9 @@ class Root extends React.Component {
       if (user) {
         this.props.setUser(user);
         this.props.history.push("/"); //like redirect
+      } else {
+          this.props.history.push("/login")
+          this.props.clearUser() //clear user from global state and set isLoading to false
       }
     });
   }
@@ -49,7 +52,7 @@ const mapStateFromProps = state => ({
     isLoading: state.user.isLoading
 })
 
-const RootWithAuth = withRouter(connect(mapStateFromProps, { setUser })(Root));
+const RootWithAuth = withRouter(connect(mapStateFromProps, { setUser, clearUser })(Root));
 
 ReactDOM.render(
   <Provider store={store}>
