@@ -1,7 +1,7 @@
 // import all component from types as an object: actionTypes
 import * as actionTypes from './types'; 
 
-//action 1
+//user action 1
 export const setUser = user => {
     return{
         type: actionTypes.SET_USER,
@@ -11,12 +11,22 @@ export const setUser = user => {
     }
 }
 
-//action 2
+//user action 2
 export const clearUser = () => {
     return{
         type: actionTypes.CLEAR_USER,
         payload: {
             currentUser: actionTypes.CLEAR_USER
+        }
+    }
+}
+
+// channel action 1
+export const setCurrentChannel = channel => {
+    return {
+        type: actionTypes.SET_CURRENT_CHANNEL,
+        payload: {
+            currentChannel: channel
         }
     }
 }
