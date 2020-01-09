@@ -1,5 +1,4 @@
 import React from 'react';
-import SidePanel from '../SidePanel/SidePanel';
 
 class Messages extends React.Component {
     state = {  }
