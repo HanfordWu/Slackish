@@ -20,6 +20,14 @@ class Channels extends React.Component {
       this.addListeners()
   }
 
+  componentWillUnmount() {
+      this.removeListeners()
+  }
+
+  removeListeners = () => {
+      this.state.channelRef.off()
+  }
+
   addListeners = () => {
       let loadedChannels = []
       this.state.channelRef.on('child_added', snap => { // keep extract all the channels in database
