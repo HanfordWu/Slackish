@@ -11,19 +11,38 @@ class Channels extends React.Component {
     channelName: "",
     channelDetails: "",
     channelRef: firebase.database().ref('channels'),
-    user: this.props.currentUser
+    user: this.props.currentUser,
+    firstLoad: true,//only at the beginning of the first load, we set the first channel
+    activeChannel: ''
   };
 
   componentDidMount() {
       this.addListeners()
   }
 
+  componentWillUnmount() {
+      this.removeListeners()
+  }
+
+  removeListeners = () => {
+      this.state.channelRef.off()
+  }
+
   addListeners = () => {
       let loadedChannels = []
       this.state.channelRef.on('child_added', snap => { // keep extract all the channels in database
         loadedChannels.push(snap.val())
-        this.setState({ channels: loadedChannels });
+        this.setState({ channels: loadedChannels }, () => this.setFirstChannel()); //after we get channels from database, we set the first channel to be global current channel
       })
+  }
+
+  setFirstChannel = () => {
+      const firstChannel = this.state.channels[0]
+      if (this.state.firstLoad && firstChannel !== null) {
+          this.props.setCurrentChannel(firstChannel)
+          this.setActiveChannel(firstChannel);
+      }
+      this.setState({ firstLoad: false });
   }
 
   closeModal = () => {
@@ -72,6 +91,11 @@ class Channels extends React.Component {
 
   changeChannel = channel => {
       this.props.setCurrentChannel(channel)
+      this.setActiveChannel(channel)
+  }
+
+  setActiveChannel = (channel) => {
+    this.setState({ activeChannel: channel.id });
   }
 
   isFormValid = ({ channelName, channelDetails}) => channelName && channelDetails
@@ -82,7 +106,9 @@ class Channels extends React.Component {
             key={channel.id}
             onClick={() => this.changeChannel(channel)}
             name={channel.name}
-            style={{ opacity: 0.7 }}>
+            style={{ opacity: 0.7 }}
+            active={channel.id === this.state.activeChannel}    
+        >
                 # {channel.name}
             </Menu.Item>
       ))
