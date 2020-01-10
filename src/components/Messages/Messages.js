@@ -1,12 +1,18 @@
-import React from 'react';
-import { Segment, Comment } from 'semantic-ui-react';
-import MessageForm from './MessageForm';
-import MessagesHeader from './MessagesHeader';
+import React from "react";
+import { Segment, Comment } from "semantic-ui-react";
+import MessageForm from "./MessageForm";
+import MessagesHeader from "./MessagesHeader";
+import firebase from "../../firebase";
 
 class Messages extends React.Component {
-    state = {  }
-    render() { 
-        return ( 
+    state = {
+        messagesRef: firebase.database().ref("messages"),
+        channel: this.props.currentChannel,
+        user: this.props.currentUser
+    };
+    render() {
+        const { messagesRef, channel, user } = this.state;
+        return (
             <React.Fragment>
                 <MessagesHeader />
                 {/* Following segment is messages areas */}
@@ -15,10 +21,14 @@ class Messages extends React.Component {
                         {/* messages */}
                     </Comment.Group>
                 </Segment>
-                <MessageForm />
+                <MessageForm
+                    messagesRef={messagesRef}
+                    currentChannel={channel}
+                    currentUser={user}
+                />
             </React.Fragment>
-         );
+        );
     }
 }
- 
+
 export default Messages;
