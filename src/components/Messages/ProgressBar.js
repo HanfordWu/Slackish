@@ -1,7 +1,7 @@
 import React from 'react';
 
 const ProgressBar = ({ uploadState, percentUploaded }) => (
-    uploadState && (
+    uploadState === "uploading" && (
         <Progress
         className="progress__bar"
         percentUploaded={percentUploaded}
