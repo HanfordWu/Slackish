@@ -3,8 +3,6 @@ import firebase from "../../firebase";
 import { Segment, Input, Button } from "semantic-ui-react";
 import FileModal from "./FileModal";
 import ProgressBar from "./ProgressBar";
-import ProgressBar from './ProgressBar'
-
 class MessageForm extends React.Component {
     state = {
         message: "",

@@ -12,7 +12,10 @@ class Messages extends React.Component {
         user: this.props.currentUser,
         messagesLoading: true,
         messages: [],
-        numUniqueUsers: ''
+        numUniqueUsers: '',
+        searchTerm: '',
+        searchLoading: false,
+        searchResults: []
     };
 
     componentDidMount() {
@@ -47,6 +50,25 @@ class Messages extends React.Component {
         this.setState({ numUniqueUsers})
     }
 
+    handleSearchChange = event => {
+        this.setState({
+            searchTerm: event.target.value,
+            searchTerm: true
+        }, () => this.handSearchMessages())
+    }
+
+    handSearchMessages = () => {
+        const channelMessages = [...this.state.messages] /**make sure we don't mutate original message array */
+        const regex = new RegExp(this.state.searchTerm, 'gi')
+        const searchResults = channelMessages.reduce((acc, message) => {
+            if (message.content && message.content.match(regex)) { /**we don't want search image message. if it is a image message, its content is null */
+                acc.push(message)
+            }
+        },[])
+        this.setState({ searchResults })
+        setTimeout(() => this.setState({ searchLoading: false }), 1000)
+    }
+
     displayChannelName = channel => channel ? `#${channel.name}` : ``
 
     displayMessages = messages =>
@@ -57,18 +79,21 @@ class Messages extends React.Component {
             />);
 
     render() {
-        const { messagesRef, channel, user, messages } = this.state;
+        const { messagesRef, channel, user, messages, searchResults, numUniqueUsers, searchTerm, searchLoading } = this.state;
         return (
             <React.Fragment>
                 <MessagesHeader
                     channelName={this.displayChannelName(channel)}
                     numUniqueUsers={numUniqueUsers}
+                    handleSearchChange={this.handleSearchChange}
+                    searchLoading={searchLoading}
                 />
                 {/* Following segment is messages areas */}
                 <Segment>
                     <Comment.Group className="messages">
                         {/* messages */}
-                        {this.displayMessages(messages)}
+                        {searchTerm ? this.displayMessages(searchResults) :
+                        this.displayMessages(messages)}
                     </Comment.Group>
                 </Segment>
                 <MessageForm
