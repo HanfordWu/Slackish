@@ -102,6 +102,7 @@ class MessageForm extends React.Component {
                 <Button.Group icon widths="2">
                     <Button
                         color="orange"
+                        disabled={uploadState === "uploading"}
                         content="Add Reply"
                         labelPosition="left"
                         icon="edit"
