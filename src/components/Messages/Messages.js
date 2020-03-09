@@ -11,7 +11,11 @@ class Messages extends React.Component {
         channel: this.props.currentChannel,
         user: this.props.currentUser,
         messagesLoading: true,
-        messages: []
+        messages: [],
+        numUniqueUsers: '',
+        searchTerm: '',
+        searchLoading: false,
+        searchResults: []
     };
 
     componentDidMount() {
@@ -31,7 +35,41 @@ class Messages extends React.Component {
             loadedMessages.push(snap.val());
             this.setState({ messages: loadedMessages, messagesLoading: false });
         });
+        this.countUniqueUsers(loadedMessages);
     };
+
+    countUniqueUsers = messages => {
+        const uniqueUsers = messages.reduce((acc, message) => {
+            if (!acc.include(message.user.name)) {
+                acc.push(message.user.name)
+            }
+            return acc
+        }, [])
+        const plural = uniqueUsers.length > 1 || uniqueUsers.length == 0
+        const numUniqueUsers = `${uniqueUsers.length} user${plural ? "s" : ""}s`
+        this.setState({ numUniqueUsers})
+    }
+
+    handleSearchChange = event => {
+        this.setState({
+            searchTerm: event.target.value,
+            searchTerm: true
+        }, () => this.handSearchMessages())
+    }
+
+    handSearchMessages = () => {
+        const channelMessages = [...this.state.messages] /**make sure we don't mutate original message array */
+        const regex = new RegExp(this.state.searchTerm, 'gi')
+        const searchResults = channelMessages.reduce((acc, message) => {
+            if (message.content && message.content.match(regex)) { /**we don't want search image message. if it is a image message, its content is null */
+                acc.push(message)
+            }
+        },[])
+        this.setState({ searchResults })
+        setTimeout(() => this.setState({ searchLoading: false }), 1000)
+    }
+
+    displayChannelName = channel => channel ? `#${channel.name}` : ``
 
     displayMessages = messages =>
         messages.length > 0 && messages.map(message => <Message
@@ -41,15 +79,21 @@ class Messages extends React.Component {
             />);
 
     render() {
-        const { messagesRef, channel, user, messages } = this.state;
+        const { messagesRef, channel, user, messages, searchResults, numUniqueUsers, searchTerm, searchLoading } = this.state;
         return (
             <React.Fragment>
-                <MessagesHeader />
+                <MessagesHeader
+                    channelName={this.displayChannelName(channel)}
+                    numUniqueUsers={numUniqueUsers}
+                    handleSearchChange={this.handleSearchChange}
+                    searchLoading={searchLoading}
+                />
                 {/* Following segment is messages areas */}
                 <Segment>
                     <Comment.Group className="messages">
                         {/* messages */}
-                        {this.displayMessages(messages)}
+                        {searchTerm ? this.displayMessages(searchResults) :
+                        this.displayMessages(messages)}
                     </Comment.Group>
                 </Segment>
                 <MessageForm

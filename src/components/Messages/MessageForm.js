@@ -2,7 +2,7 @@ import React from "react";
 import firebase from "../../firebase";
 import { Segment, Input, Button } from "semantic-ui-react";
 import FileModal from "./FileModal";
-
+import ProgressBar from "./ProgressBar";
 class MessageForm extends React.Component {
     state = {
         message: "",
@@ -20,7 +20,7 @@ class MessageForm extends React.Component {
         this.setState({ [event.target.name]: event.target.value });
     };
 
-    createMessage = () => {
+    createMessage = (fileUrl = null) => {
         const message = {
             timestamp: firebase.database.ServerValue.TIMESTAMP,
             user: {
@@ -28,8 +28,12 @@ class MessageForm extends React.Component {
                 name: this.state.user.displayName,
                 avatar: this.state.user.photoURL
             },
-            content: this.state.message
         };
+        if (fileUrl !== null) {
+            message['image'] = fileUrl;
+        } else {
+            message['content'] = this.state.message;
+        }
         return message;
     };
 
@@ -58,8 +62,24 @@ class MessageForm extends React.Component {
         }
     };
 
+    sendFileMessage = (fileUrl, ref, pathToUpload) => {
+        ref.child(pathToUpload)
+            .push()
+            .set(this.createMessage(fileUrl))
+            .then(() => {
+                this.setState({ uploadState: 'done'})
+            })
+            .catch(err => {
+                console.error(err);
+                this.setState({
+                    errors: this.state.errors.concat(err)
+                })
+            })
+    }
+
+
     render() {
-        const { errors, loading, modal } = this.state;
+        const { errors, loading, modal, uploadState, percentUploaded } = this.state;
         return (
             <Segment className="message__form">
                 <Input
@@ -80,6 +100,7 @@ class MessageForm extends React.Component {
                 <Button.Group icon widths="2">
                     <Button
                         color="orange"
+                        disabled={uploadState === "uploading"}
                         content="Add Reply"
                         labelPosition="left"
                         icon="edit"
@@ -94,7 +115,13 @@ class MessageForm extends React.Component {
                         onClick={this.openModal}
                     />
                 </Button.Group>
-                <FileModal modal={modal} closeModal={this.closeModal} />
+                <FileModal
+                    modal={modal}
+                    closeModal={this.closeModal}
+                    uploadFile={this.uploadFile}
+                />
+                <ProgressBar uploadState={uploadState}
+                percentUploaded={percentUploaded} />
             </Segment>
         );
     }
