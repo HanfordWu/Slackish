@@ -94,7 +94,11 @@ class MessageForm extends React.Component {
                         onClick={this.openModal}
                     />
                 </Button.Group>
-                <FileModal modal={modal} closeModal={this.closeModal} />
+                <FileModal
+                    modal={modal}
+                    closeModal={this.closeModal}
+                    uploadFile={this.uploadFile}
+                />
             </Segment>
         );
     }
