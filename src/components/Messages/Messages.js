@@ -40,7 +40,7 @@ class Messages extends React.Component {
 
     countUniqueUsers = messages => {
         const uniqueUsers = messages.reduce((acc, message) => {
-            if (!acc.include(message.user.name)) {
+            if (!acc.includes(message.user.name)) {
                 acc.push(message.user.name)
             }
             return acc
