@@ -3,6 +3,8 @@ import firebase from "../../firebase";
 import { Segment, Input, Button } from "semantic-ui-react";
 import FileModal from "./FileModal";
 import ProgressBar from "./ProgressBar";
+import uuidv4 from 'uuid/v4';
+
 class MessageForm extends React.Component {
     state = {
         message: "",
@@ -10,7 +12,8 @@ class MessageForm extends React.Component {
         channel: this.props.currentChannel,
         user: this.props.currentUser,
         errors: [],
-        modal: false
+        modal: false,
+        storageRef: firebase.storage().ref(), //after move uploadFile function here, we need add this state
     };
 
     openModal = () => this.setState({ modal: true });
@@ -39,9 +42,9 @@ class MessageForm extends React.Component {
 
     sendMessage = () => {
         const { message, channel } = this.state;
-        const { messagesRef } = this.props;
+        const { getMessagesRef } = this.props;
         if (message) {
-            messagesRef
+            getMessagesRef
                 .child(channel.id)
                 .push()
                 .set(this.createMessage())
@@ -76,6 +79,62 @@ class MessageForm extends React.Component {
                 })
             })
     }
+
+    getPath = () => {
+        if (this.props.isPrivateChannel) {
+            return`chat/private-${this.state.channel.id}`
+        } else {
+            return`chat/public`;
+        }
+    }
+
+// move uploadFile from FileModal.js to here, fix previous error.
+    uploadFile = (file, metadata) => {
+        const pathToUpload = this.state.channel.id;
+        const ref = this.props.getMessagesRef();
+        const filePath = `${this.getPath()}/${uuidv4()}.jpg`;
+    
+        this.setState(
+          {
+            uploadState: "uploading",
+            uploadTask: this.state.storageRef.child(filePath).put(file, metadata)
+          },
+          () => {
+            this.state.uploadTask.on(
+              "state_changed",
+              snap => {
+                const percentUploaded = Math.round(
+                  (snap.bytesTransferred / snap.totalBytes) * 100
+                );
+                this.setState({ percentUploaded });
+              },
+              err => {
+                console.error(err);
+                this.setState({
+                  errors: this.state.errors.concat(err),
+                  uploadState: "error",
+                  uploadTask: null
+                });
+              },
+              () => {
+                this.state.uploadTask.snapshot.ref
+                  .getDownloadURL()
+                  .then(downloadUrl => {
+                    this.sendFileMessage(downloadUrl, ref, pathToUpload);
+                  })
+                  .catch(err => {
+                    console.error(err);
+                    this.setState({
+                      errors: this.state.errors.concat(err),
+                      uploadState: "error",
+                      uploadTask: null
+                    });
+                  });
+              }
+            );
+          }
+        );
+      };
 
 
     render() {
