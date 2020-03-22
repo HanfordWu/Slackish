@@ -1,8 +1,8 @@
 import React from "react";
 import { Modal, Input, Button, Icon } from "semantic-ui-react";
 import mime from 'mime-types';
-import uuidv4 from 'uuid/v4';
 import firebase from "../../firebase";
+import MessageForm from "./MessageForm";
 
 class FileModal extends React.Component {
     state = {
@@ -27,7 +27,7 @@ class FileModal extends React.Component {
         if (file !== null) {
             if (this.isAuthorized(file.name)) {
                 const metadata = { contentType: mime.lookup(file.name)}
-                this.uploadFile(file, metadata)
+                uploadFile(file, metadata)
                 closeModal();
                 this.clearFile();
             }
@@ -41,46 +41,7 @@ class FileModal extends React.Component {
 
 
     isAuthorized = filename => this.state.authorized.includes(mime.lookup(filename))
-
-    uploadFile = (file, metadata) => {
-        const pathToUpload = this.state.channel.id;
-        const ref = this.props.messageRef;
-        const filePath = `chat/public/${uuidv4()}.jpg`
-        this.setState({
-            uploadState: 'uploading',
-            uploadTask: this.state.storageRef.child(filePath).put(file, metadata)
-        },
-            () => {
-                this.state.uploadTask.on('state_changed', snap => {
-                    const percentUpload = Math.round((snap.bytesTransferred / snap.totalBytes) *100);
-                    this.setState({ percentUpload })
-                },
-                err => {
-                    console.error(err);
-                    this.setState({
-                        errors: this.setState.errors.concat(err),
-                        uploadState: 'error',
-                        uploadTask: null
-                    })
-                },
-                () => {
-                    this.state.uploadTask.snapshot.ref.getDownloadURL().then(downloadUrl => {
-                        this.sendFileMessage(downloadUrl, ref, pathToUpload)
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        this.setState({
-                            errors: this.setState.errors.concat(err),
-                            uploadState: 'error',
-                            uploadTask: null
-                        })
-                    })
-                }
-                )
-            }
-        
-        )
-    }
+// Move uploadFile function up to MessageForm.js
 
 
 
