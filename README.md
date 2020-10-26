@@ -10,6 +10,6 @@ Practicing:
 - RESTful API
 
 
-A live Demo: https://slackish-7d9f8.web.app
+A live Demo(After registration, please refresh the page :smiley: :smiley:): https://slackish-7d9f8.web.app
 
-After registration, please refresh the page.
+
